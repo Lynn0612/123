@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <p>總共 {{ totalGoods }} 個讚</p>
+    <!-- 
+      Card 元件中對 cards 陣列執行 for 迴圈，把陣列中所有的物件 run 一次，每個物件為 card，
+      利用 v-bind 綁定 card 物件裡面的屬性，將屬性內容渲染出來
+      @ good = 綁定 good 事件，當收到子元素傳遞 good 事件時，將 card 中的 good 值改成相反值 (true <=> false)
+    -->
+    <Card v-for="card in cards" v-bind="card" @good="card.good = !card.good"></Card>
+  </div>
+  <script src=https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.9/vue.global.min.js integrity="sha512-RfaqV8pY2vqBo59X2scuU0DnKII3tyVNv5lb/Ym9j7tHgmCLmdtNlWZdJZD911opleydEp/NdOmd+YveMwAxqg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  </script>
+  <!-- 有一個 id = card 的 vue 模板 -->
+  <script type="text/x-template" id="card">
+    <!-- 模板內有一個 div 包著 img、p、input 標籤，此模板最外層僅能一層 -->
+    <div class="card">
+      <!-- img 的 src 綁定在 cards 陣列中 card 物件的 img 的值 -->
+      <img :src="img" alt="">
+      <!-- p 的內容是渲染 cards 陣列中 card 物件的 text 的值  -->
+      <p>{{ text }}</p>
+      <!-- 
+        此 input 樣式為 button，其顯示的文字根據 good 的值，
+        當 good = true 顯示『收回讚』 != true 時顯示『讚』
+        當點擊時執行 onBtnClick 的函式
+      -->
+      <input type="button" :value="good ? '收回讚' : '讚'" @click="onBtnClick">
+    </div>
+  </script>
+  <script>
+    // 解構 {} 後面就不用使用時輸入 Vue.reactive，僅輸入 reactive 即可
+    const { reactive, computed } = Vue
+    Vue
+      .createApp({
+        setup () {
+          // 宣告 cards = 一個陣列
+          const cards = reactive([
+            { img: 'https://picsum.photos/100/?random=1', text: 'AAA', good: false },
+            { img: 'https://picsum.photos/100/?random=2', text: 'BBB', good: false },
+            { img: 'https://picsum.photos/100/?random=3', text: 'CCC', good: false },
+            { img: 'https://picsum.photos/100/?random=4', text: 'DDD', good: false },
+            { img: 'https://picsum.photos/100/?random=5', text: 'EEE', good: false }
+          ])
+
+          /*
+            宣告 totalGoods = computed 響應式計算
+            利用 filter 過濾 cards 陣列中物件 card 的 good 值 = true，
+            並回傳 cards 陣列中物件 card 的 good 值 = true 的陣列長度
+          */
+          const totalGoods = computed(() => {
+            return cards.filter(card => {
+              return card.good
+            }).length
+          })
+
+          return {
+            cards,
+            totalGoods,
+          }
+        }
+      })
+      /* 
+        有一個命名為 Card 的元件 (第16行)，其模板為 id = card 的模板
+        渲染時 #card 模板需要 <div .card> 中的 img、text、good 的值
+      */
+      .component('Card', {
+        template: '#card',
+        props: ['img', 'text', 'good'],
+        setup (props, { emit }) {
+          // onBtnClick 函式會執行 <div .card> 傳遞 good 的值 (true || false)
+          const onBtnClick = () => {
+            emit('good')
+          }
+          return {
+            onBtnClick
+          }
+        }
+      })
+      .mount('#app')
+  </script>
+</body>
+</html>
